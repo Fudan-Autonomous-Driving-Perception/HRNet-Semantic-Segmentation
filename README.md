@@ -1,4 +1,10 @@
 # High-resolution networks and Segmentation Transformer for Semantic Segmentation
+## 实验记录
+### CityScapes
+|来源|mIOU|Pole|Traffic Sign|FPS|更新时间|
+|:-:|:-:|:-:|:-:|:-:|:-:|
+|HRNetV2-W18 (epoch484)|78.62|68.35|80.15|-|2021.10.20|
+|HRNetV2-W48 + OCR(val)|82.80|72.66|84.04|-|2021.10.20|
 ## Branches
 - This is the implementation for HRNet + OCR.
 - The PyTroch 1.1 version ia available [here](https://github.com/HRNet/HRNet-Semantic-Segmentation/tree/pytorch-v1.1).
@@ -220,15 +226,19 @@ Note that we only reproduce HRNet+OCR on LIP dataset using PyTorch 0.4.1. So we 
 
 For example, evaluating HRNet+OCR on the Cityscapes validation set with multi-scale and flip testing:
 ````bash
+python tools/test.py --cfg experiments/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml \
+                     TEST.MODEL_FILE output/cityscapes/seg_hrnet_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484/best.pth \
+                     TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75 \
+                     TEST.FLIP_TEST True
 python tools/test.py --cfg experiments/cityscapes/seg_hrnet_ocr_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml \
-                     TEST.MODEL_FILE hrnet_ocr_cs_8162_torch11.pth \
+                     TEST.MODEL_FILE data/pretrained_models/hrnet_ocr_cs_8162_torch11.pth \
                      TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75 \
                      TEST.FLIP_TEST True
 ````
 Evaluating HRNet+OCR on the Cityscapes test set with multi-scale and flip testing:
 ````bash
 python tools/test.py --cfg experiments/cityscapes/seg_hrnet_ocr_w48_train_512x1024_sgd_lr1e-2_wd5e-4_bs_12_epoch484.yaml \
-                     DATASET.TEST_SET list/cityscapes/test.lst \
+                     DATASET.TEST_SET test.lst \
                      TEST.MODEL_FILE hrnet_ocr_trainval_cs_8227_torch11.pth \
                      TEST.SCALE_LIST 0.5,0.75,1.0,1.25,1.5,1.75 \
                      TEST.FLIP_TEST True
