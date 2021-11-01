@@ -2,11 +2,11 @@ CUDNN:
   BENCHMARK: true
   DETERMINISTIC: false
   ENABLED: true
-GPUS: (0,1,2,3)
+GPUS: (0,1)
 OUTPUT_DIR: 'output'
 LOG_DIR: 'log'
-WORKERS: 4
-PRINT_FREQ: 10
+WORKERS: 8
+PRINT_FREQ: 100
 
 DATASET:
   DATASET: cityscapes
@@ -15,9 +15,9 @@ DATASET:
   TRAIN_SET: 'train.lst'
   NUM_CLASSES: 19
 MODEL:
-  NAME: seg_hrnet_ocr
-  NUM_OUTPUTS: 2
-  PRETRAINED: "data/pretrained_models/hrnetv2_w48_imagenet_pretrained.pth"
+  NAME: seg_hrnet
+  ALIGN_CORNERS: False
+  PRETRAINED: 'data/pretrained_models/hrnetv2_w18_imagenet_pretrained.pth'
   EXTRA:
     FINAL_CONV_KERNEL: 1
     STAGE1:
@@ -37,8 +37,8 @@ MODEL:
       - 4
       - 4
       NUM_CHANNELS:
-      - 48
-      - 96
+      - 18
+      - 36
       FUSE_METHOD: SUM
     STAGE3:
       NUM_MODULES: 4
@@ -49,9 +49,9 @@ MODEL:
       - 4
       - 4
       NUM_CHANNELS:
-      - 48
-      - 96
-      - 192
+      - 18
+      - 36
+      - 72
       FUSE_METHOD: SUM
     STAGE4:
       NUM_MODULES: 3
@@ -63,16 +63,15 @@ MODEL:
       - 4
       - 4
       NUM_CHANNELS:
-      - 48
-      - 96
-      - 192
-      - 384
+      - 18
+      - 36
+      - 72
+      - 144
       FUSE_METHOD: SUM
 LOSS:
   USE_OHEM: false
   OHEMTHRES: 0.9
   OHEMKEEP: 131072
-  BALANCE_WEIGHTS: [0.4, 1]
 TRAIN:
   IMAGE_SIZE:
   - 1024
