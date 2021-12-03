@@ -196,7 +196,8 @@ Note that the codebase supports both PyTorch 0.4.1 and 1.1.0, and they use diffe
 # For PyTorch 0.4.1
 PY_CMD="python"
 # For PyTorch 1.1.0
-PY_CMD="python -m torch.distributed.launch --nproc_per_node=4 --master_port 29501"
+PY_CMD="python -m torch.distributed.launch --nproc_per_node=4"
+PY_CMD="python -m torch.distributed.launch --nproc_per_node=1 --master_port 29501"
 ```
 
 e.g., when training on Cityscapes, we use PyTorch 1.1.0. So the command

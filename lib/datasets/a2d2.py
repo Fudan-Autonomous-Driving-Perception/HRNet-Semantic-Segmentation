@@ -3,61 +3,18 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
-import pandas as pd
 
 import torch
 from torch.nn import functional as F
 
 from .base_dataset import BaseDataset
 
-matchLabels = [
-    # name id trainId category catId hasInstances ignoreInEval color
-    ( 'void' , 0 , 0, 'void' , 0 , False , False , ( 0, 0, 0) ),
-    ( 's_w_d' , 200 , 1 , 'dividing' , 1 , False , False , ( 70, 130, 180) ),
-    ( 's_y_d' , 204 , 1 , 'dividing' , 1 , False , False , (220, 20, 60) ),
-    ( 'ds_w_dn' , 213 , 1 , 'dividing' , 1 , False , True , (128, 0, 128) ),
-    ( 'ds_y_dn' , 209 , 1 , 'dividing' , 1 , False , False , (255, 0, 0) ),
-    ( 'sb_w_do' , 206 , 1 , 'dividing' , 1 , False , True , ( 0, 0, 60) ),
-    ( 'sb_y_do' , 207 , 1 , 'dividing' , 1 , False , True , ( 0, 60, 100) ),
-    ( 'b_w_g' , 201 , 2 , 'guiding' , 2 , False , False , ( 0, 0, 142) ),
-    ( 'b_y_g' , 203 , 2 , 'guiding' , 2 , False , False , (119, 11, 32) ),
-    ( 'db_w_g' , 211 , 2 , 'guiding' , 2 , False , True , (244, 35, 232) ),
-    ( 'db_y_g' , 208 , 2 , 'guiding' , 2 , False , True , ( 0, 0, 160) ),
-    ( 'db_w_s' , 216 , 3 , 'stopping' , 3 , False , True , (153, 153, 153) ),
-    ( 's_w_s' , 217 , 3 , 'stopping' , 3 , False , False , (220, 220, 0) ),
-    ( 'ds_w_s' , 215 , 3 , 'stopping' , 3 , False , True , (250, 170, 30) ),
-    ( 's_w_c' , 218 , 4 , 'chevron' , 4 , False , True , (102, 102, 156) ),
-    ( 's_y_c' , 219 , 4 , 'chevron' , 4 , False , True , (128, 0, 0) ),
-    ( 's_w_p' , 210 , 5 , 'parking' , 5 , False , False , (128, 64, 128) ),
-    ( 's_n_p' , 232 , 5 , 'parking' , 5 , False , True , (238, 232, 170) ),
-    ( 'c_wy_z' , 214 , 6 , 'zebra' , 6 , False , False , (190, 153, 153) ),
-    ( 'a_w_u' , 202 , 7 , 'thru/turn' , 7 , False , True , ( 0, 0, 230) ),
-    ( 'a_w_t' , 220 , 7 , 'thru/turn' , 7 , False , False , (128, 128, 0) ),
-    ( 'a_w_tl' , 221 , 7 , 'thru/turn' , 7 , False , False , (128, 78, 160) ),
-    ( 'a_w_tr' , 222 , 7 , 'thru/turn' , 7 , False , False , (150, 100, 100) ),
-    ( 'a_w_tlr' , 231 , 7 , 'thru/turn' , 7 , False , True , (255, 165, 0) ),
-    ( 'a_w_l' , 224 , 7 , 'thru/turn' , 7 , False , False , (180, 165, 180) ),
-    ( 'a_w_r' , 225 , 7 , 'thru/turn' , 7 , False , False , (107, 142, 35) ),
-    ( 'a_w_lr' , 226 , 7 , 'thru/turn' , 7 , False , False , (201, 255, 229) ),
-    ( 'a_n_lu' , 230 , 7 , 'thru/turn' , 7 , False , True , (0, 191, 255) ),
-    ( 'a_w_tu' , 228 , 7 , 'thru/turn' , 7 , False , True , ( 51, 255, 51) ),
-    ( 'a_w_m' , 229 , 7 , 'thru/turn' , 7 , False , True , (250, 128, 114) ),
-    ( 'a_y_t' , 233 , 7 , 'thru/turn' , 7 , False , True , (127, 255, 0) ),
-    ( 'b_n_sr' , 205 , 8 , 'reduction' , 8 , False , False , (255, 128, 0) ),
-    ( 'd_wy_za' , 212 , 8 , 'attention' , 8 , False , True , ( 0, 255, 255) ),
-    ( 'r_wy_np' , 227 , 8 , 'no parking' , 8 , False , False , (178, 132, 190) ),
-    ( 'vom_wy_n' , 223 , 8 , 'others' , 8 , False , True , (128, 128, 64) ),
-    ( 'om_n_n' , 250 , 8 , 'others' , 8 , False , False , (102, 0, 204) ),
-    ( 'noise' , 249 , 0 , 'ignored' , 0 , False , True , ( 0, 153, 153) ),
-    ( 'ignored' , 255 , 0 , 'ignored' , 0 , False , True , (255, 255, 255) ),
-    ]
-
-class Baidu(BaseDataset):
+class A2D2(BaseDataset):
     def __init__(self, 
                  root, 
                  list_path, 
                  num_samples=None, 
-                 num_classes=9,
+                 num_classes=19,
                  multi_scale=True, 
                  flip=True, 
                  ignore_label=-1, 
@@ -68,45 +25,82 @@ class Baidu(BaseDataset):
                  mean=[0.485, 0.456, 0.406], 
                  std=[0.229, 0.224, 0.225]):
 
-        super(Baidu, self).__init__(ignore_label, base_size,
+        super(A2D2, self).__init__(ignore_label, base_size,
                 crop_size, downsample_rate, scale_factor, mean, std,)
 
         self.root = root
         self.list_path = list_path
-        
         self.num_classes = num_classes
 
         self.multi_scale = multi_scale
         self.flip = flip
         
-        self.data = pd.read_csv(os.path.join(root, list_path), header=None, names=["image","label"])
-        self.img_list = list(zip(self.data["image"].values[1:], self.data["label"].values[1:]))
+        self.img_list = [line.strip().split() for line in open(root+list_path)]
 
         self.files = self.read_files()
         if num_samples:
             self.files = self.files[:num_samples]
 
-        self.label_mapping = dict()
-        for info in matchLabels:
-            self.label_mapping[info[1]] = info[2]
-        # self.label_mapping = {-1: ignore_label, 0: ignore_label, 
-        #                       1: ignore_label, 2: ignore_label, 
-        #                       3: ignore_label, 4: ignore_label, 
-        #                       5: ignore_label, 6: ignore_label, 
-        #                       7: 0, 8: 1, 9: ignore_label, 
-        #                       10: ignore_label, 11: 2, 12: 3, 
-        #                       13: 4, 14: ignore_label, 15: ignore_label, 
-        #                       16: ignore_label, 17: 5, 18: ignore_label, 
-        #                       19: 6, 20: 7, 21: 8, 22: 9, 23: 10, 24: 11,
-        #                       25: 12, 26: 13, 27: 14, 28: 15, 
-        #                       29: ignore_label, 30: ignore_label, 
-        #                       31: 16, 32: 17, 33: 18}
-        self.class_weights = torch.ones(9, dtype=torch.float).cuda()
-        # self.class_weights = torch.FloatTensor([0.8373, 0.918, 0.866, 1.0345, 
-        #                                 1.0166, 0.9969, 0.9754, 1.0489,
-        #                                 0.8786, 1.0023, 0.9539, 0.9843, 
-        #                                 1.1116, 0.9037, 1.0865, 1.0955, 
-        #                                 1.0865, 1.1529, 1.0507]).cuda()
+        self.label_mapping = {(255, 0, 0): 0,
+                              (200, 0, 0): 0,
+                              (150, 0, 0): 0,
+                              (128, 0, 0): 0,
+                              (182, 89, 6): 1,
+                              (150, 50, 4): 1,
+                              (90, 30, 1):  1,
+                              (90, 30, 30): 1,
+                              (204, 153, 255): 2,
+                              (189, 73, 155):  2,
+                              (239, 89, 191):  2,
+                              (255, 128, 0): 3,
+                              (200, 128, 0): 3,
+                              (150, 128, 0): 3,
+                              (0, 255, 0): 4,
+                              (0, 200, 0): 4,
+                              (0, 150, 0): 4,
+                              (0, 128, 255): 5,
+                              (30, 28, 158): 5,
+                              (60, 28, 100): 5,
+                              (0, 255, 255):  6,
+                              (30, 220, 220): 6,
+                              (60, 157, 199): 6,
+                              (255, 255, 0):   7,
+                              (255, 255, 200): 7,
+                              (233, 100, 0): 8,
+                              (110, 110, 0): 9,
+                              (128, 128, 0): 10,
+                              (255, 193, 37): 11,
+                              (64, 0, 64): 12,
+                              (185, 122, 87): 13,
+                              (0, 0, 100): 14,
+                              (139, 99, 108): 15,
+                              (210, 50, 115): 16,
+                              (255, 0, 128): 17,
+                              (255, 246, 143): 18,
+                              (150, 0, 150): 19,
+                              (204, 255, 153): 20,
+                              (238, 162, 173): 21,
+                              (33, 44, 177): 22,
+                              (180, 50, 180): 23,
+                              (255, 70, 185): 24,
+                              (238, 233, 191): 25,
+                              (147, 253, 194): 26,
+                              (150, 150, 200): 27,
+                              (180, 150, 200): 28,
+                              (72, 209, 204): 29,
+                              (200, 125, 210): 30,
+                              (159, 121, 238): 31,
+                              (128, 0, 255): 32,
+                              (255, 0, 255): 33,
+                              (135, 206, 255): 34,
+                              (241, 230, 255): 35,
+                              (96, 69, 143): 36,
+                              (53, 46, 82): 37}
+        self.label_mapping_inv = {v:k for k,v in self.label_mapping.items()}
+        self.class_weights = torch.FloatTensor([1., 1., 1., 1., 1., 1., 1.5, 1., 1., 1.5, 
+                                                1., 1., 1., 1., 1., 1., 1., 1., 1.5, 1., 
+                                                1., 1., 1., 1., 1., 1., 1., 1., 1., 1., 
+                                                1.5, 1., 1., 1., 1., 1., 1., 1.]).cuda()
     
     def read_files(self):
         files = []
@@ -131,14 +125,19 @@ class Baidu(BaseDataset):
         return files
         
     def convert_label(self, label, inverse=False):
-        temp = label.copy()
-        
         if inverse:
-            for v, k in self.label_mapping.items():
-                label[temp == k] = v
+            label_inv = np.zeros_like(label)
+            for l in range(38):
+                label_inv[label == l] = self.label_mapping_inv[l]
+            label = label_inv
         else:
-            for k, v in self.label_mapping.items():
-                label[temp == k] = v
+            W = np.power(256, [[0],[1],[2]])
+            lb_id = label.dot(W).squeeze(-1)
+            values = np.unique(lb_id)
+            mask = np.zeros(lb_id.shape)
+            for c in values:
+                mask[lb_id==c] = self.label_mapping[tuple(label[lb_id==c][0])] 
+            label = mask
         return label
 
     def __getitem__(self, index):
@@ -146,7 +145,7 @@ class Baidu(BaseDataset):
         name = item["name"]
         # image = cv2.imread(os.path.join(self.root,'cityscapes',item["img"]),
         #                    cv2.IMREAD_COLOR)
-        image = cv2.imread(os.path.join(self.root, item["img"]),
+        image = cv2.imread(item["img"],
                            cv2.IMREAD_COLOR)
         size = image.shape
 
@@ -158,9 +157,9 @@ class Baidu(BaseDataset):
 
         # label = cv2.imread(os.path.join(self.root,'cityscapes',item["label"]),
         #                    cv2.IMREAD_GRAYSCALE)
-        label = cv2.imread(os.path.join(self.root, item["label"]),
-                           cv2.IMREAD_GRAYSCALE)
-        label = self.convert_label(label)
+        label = cv2.imread(item["label"],
+                           cv2.IMREAD_COLOR)
+        label = self.convert_label(cv2.cvtColor(label, cv2.COLOR_BGR2RGB))
 
         image, label = self.gen_sample(image, label, 
                                 self.multi_scale, self.flip)
@@ -247,4 +246,5 @@ class Baidu(BaseDataset):
             save_img.putpalette(palette)
             save_img.save(os.path.join(sv_path, name[i]+'.png'))
 
+        
         
